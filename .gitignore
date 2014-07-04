@@ -1,0 +1,9 @@
+*.comm
+*.fa
+*.gz
+*.id
+*.id-uniqtag
+*.seq
+*.sort
+*.uniqtag
+*.venn
