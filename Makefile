@@ -1,4 +1,8 @@
-all: Homo_sapiens.pep.abinitio.unique.uniqtag.venn
+all: Homo_sapiens.GRCh37.55.75.pep.abinitio.uniqtag.venn \
+	Homo_sapiens.GRCh37.60.75.pep.abinitio.uniqtag.venn \
+	Homo_sapiens.GRCh37.65.75.pep.abinitio.uniqtag.venn \
+	Homo_sapiens.GRCh37.70.75.pep.abinitio.uniqtag.venn \
+	Homo_sapiens.GRCh37.74.75.pep.abinitio.uniqtag.venn
 
 .PHONY: all
 .DELETE_ON_ERROR:
