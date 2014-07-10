@@ -1,8 +1,4 @@
-all: Homo_sapiens.GRCh37.55.75.pep.abinitio.uniqtag.venn \
-	Homo_sapiens.GRCh37.60.75.pep.abinitio.uniqtag.venn \
-	Homo_sapiens.GRCh37.65.75.pep.abinitio.uniqtag.venn \
-	Homo_sapiens.GRCh37.70.75.pep.abinitio.uniqtag.venn \
-	Homo_sapiens.GRCh37.74.75.pep.abinitio.uniqtag.venn
+all: uniqtag.tsv
 
 .PHONY: all
 .DELETE_ON_ERROR:
@@ -70,3 +66,26 @@ Homo_sapiens.GRCh37.%.75.pep.abinitio.unique.uniqtag.comm: Homo_sapiens.GRCh37.%
 	printf "%u\t%u\t%u\n" `grep -c $$'^[^\t]' $<` \
 		`grep -c $$'^\t\t' $<` \
 		`grep -c $$'^\t[^\t]' $<` >$@
+
+uniqtag-design.tsv:
+	printf "%s\t%s\n" >$@ \
+		A B \
+		55 75 \
+		60 75 \
+		65 75 \
+		70 75 \
+		74 75
+
+uniqtag-abinitio.tsv: \
+		Homo_sapiens.GRCh37.55.75.pep.abinitio.uniqtag.venn \
+		Homo_sapiens.GRCh37.60.75.pep.abinitio.uniqtag.venn \
+		Homo_sapiens.GRCh37.65.75.pep.abinitio.uniqtag.venn \
+		Homo_sapiens.GRCh37.70.75.pep.abinitio.uniqtag.venn \
+		Homo_sapiens.GRCh37.74.75.pep.abinitio.uniqtag.venn
+	(printf 'Only.A\tBoth\tOnly.B\n' && cat $^) >$@
+
+uniqtag.tsv: uniqtag-design.tsv uniqtag-abinitio.tsv
+	paste $^ >$@
+
+%.tsv.md: %.tsv
+	abyss-tabtomd $< >$@
