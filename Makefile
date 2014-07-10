@@ -1,4 +1,4 @@
-all: uniqtag.tsv
+all: uniqtag.tsv ensembl.png
 
 .PHONY: all
 .DELETE_ON_ERROR:
@@ -89,3 +89,6 @@ uniqtag.tsv: uniqtag-design.tsv uniqtag-abinitio.tsv
 
 %.tsv.md: %.tsv
 	abyss-tabtomd $< >$@
+
+ensembl.png: uniqtag.R uniqtag.tsv
+	Rscript $<
