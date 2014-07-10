@@ -3,6 +3,7 @@
 *.gz
 *.id
 *.id-uniqtag
+*.png
 *.seq
 *.sort
 *.uniqtag
