@@ -8,3 +8,5 @@
 *.sort
 *.uniqtag
 *.venn
+.Rhistory
+.Rproj.user
