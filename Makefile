@@ -1,4 +1,4 @@
-all: uniqtag.tsv ensembl.png
+all: uniqtag.tsv uniqtag.html
 
 .PHONY: all
 .DELETE_ON_ERROR:
@@ -90,5 +90,10 @@ uniqtag.tsv: uniqtag-design.tsv uniqtag-abinitio.tsv
 %.tsv.md: %.tsv
 	abyss-tabtomd $< >$@
 
-ensembl.png: uniqtag.R uniqtag.tsv
-	Rscript $<
+%.md: %.Rmd
+	Rscript -e 'knitr::knit("$<", "$@")'
+
+%.html: %.md
+	Rscript -e 'markdown::markdownToHTML("$<", "$@")'
+
+uniqtag.md: uniqtag.tsv
