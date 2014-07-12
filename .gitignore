@@ -1,11 +1,15 @@
 *.comm
 *.fa
 *.gz
+*.html
 *.id
 *.id-uniqtag
+*.md
+*.pdf
 *.png
 *.seq
 *.sort
+*.tsv
 *.uniqtag
 *.venn
 .Rhistory
