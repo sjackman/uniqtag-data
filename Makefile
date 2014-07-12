@@ -92,6 +92,7 @@ uniqtag.tsv: uniqtag-design.tsv uniqtag-abinitio.tsv
 
 %.md: %.Rmd
 	Rscript -e 'knitr::knit("$<", "$@")'
+	mogrify -units PixelsPerInch -density 300 figure/*
 
 %.html: %.md
 	Rscript -e 'markdown::markdownToHTML("$<", "$@")'
