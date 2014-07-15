@@ -29,14 +29,26 @@ Homo_sapiens.GRCh37.%.pep.abinitio.fa.gz:
 %.seq: %.fa
 	grep -v '^>' $< >$@
 
-%.unique.seq: %.seq
-	awk 'x[$$0]++ == 0' $< >$@
+%.all.fa.tsv: %.all.fa
+	awk -vORS='' '{print $$1 "\t" $$4; getline; print "\t" $$0 "\n" }' $< |sort -k2,2 -k1 >$@
 
-%.uniqtag: %.seq
+%.uniqgenemin.fa: %.fa.tsv
+	awk 'x[$$2]++ == 0 { print $$1 " " $$2 "\n" $$3 }' $< >$@
+
+%.uniqgene.fa: %.fa
+	awk 'x[$$4]++ == 0 { print; getline; print; next } { getline }' $< >$@
+
+%.uniqseq.fa: %.fa
+	bioawk -cfastx 'x[$$seq]++ == 0 { print ">" $$name " " $$comment "\n" $$seq }' $< >$@
+
+%.uniqtag: %.fa
 	uniqtag $< >$@
 
-%.uniqtag.sort: %.uniqtag
+%.sort: %
 	sort $< >$@
+
+%.gene: %.fa
+	sed -En 's/^>.*gene:([^ ]*).*/\1/p' $< >$@
 
 %.id: %.fa
 	sed -En 's/^>([^ ]*).*/\1/p' $< >$@
@@ -44,22 +56,19 @@ Homo_sapiens.GRCh37.%.pep.abinitio.fa.gz:
 %.id-uniqtag: %.id %.uniqtag
 	paste $^ >$@
 
-Homo_sapiens.NCBI36.54.GRCh37.75.%.comm: Homo_sapiens.NCBI36.54.%.sort Homo_sapiens.GRCh37.75.%.sort
+Homo_sapiens.GRCh37.55.75.%.comm: Homo_sapiens.GRCh37.55.%.sort Homo_sapiens.GRCh37.75.%.sort
+	comm $^ >$@
+
+Homo_sapiens.GRCh37.60.75.%.comm: Homo_sapiens.GRCh37.60.%.sort Homo_sapiens.GRCh37.75.%.sort
+	comm $^ >$@
+
+Homo_sapiens.GRCh37.65.75.%.comm: Homo_sapiens.GRCh37.65.%.sort Homo_sapiens.GRCh37.75.%.sort
+	comm $^ >$@
+
+Homo_sapiens.GRCh37.70.75.%.comm: Homo_sapiens.GRCh37.70.%.sort Homo_sapiens.GRCh37.75.%.sort
 	comm $^ >$@
 
 Homo_sapiens.GRCh37.74.75.%.comm: Homo_sapiens.GRCh37.74.%.sort Homo_sapiens.GRCh37.75.%.sort
-	comm $^ >$@
-
-Homo_sapiens.NCBI36.54.GRCh37.%.pep.abinitio.uniqtag.comm: Homo_sapiens.NCBI36.54.pep.abinitio.uniqtag.sort Homo_sapiens.GRCh37.%.pep.abinitio.uniqtag.sort
-	comm $^ >$@
-
-Homo_sapiens.GRCh37.%.75.pep.all.uniqtag.comm: Homo_sapiens.GRCh37.%.pep.all.uniqtag.sort Homo_sapiens.GRCh37.75.pep.all.uniqtag.sort
-	comm $^ >$@
-
-Homo_sapiens.GRCh37.%.75.pep.abinitio.uniqtag.comm: Homo_sapiens.GRCh37.%.pep.abinitio.uniqtag.sort Homo_sapiens.GRCh37.75.pep.abinitio.uniqtag.sort
-	comm $^ >$@
-
-Homo_sapiens.GRCh37.%.75.pep.abinitio.unique.uniqtag.comm: Homo_sapiens.GRCh37.%.pep.abinitio.unique.uniqtag.sort Homo_sapiens.GRCh37.75.pep.abinitio.unique.uniqtag.sort
 	comm $^ >$@
 
 %.venn: %.comm
@@ -67,24 +76,24 @@ Homo_sapiens.GRCh37.%.75.pep.abinitio.unique.uniqtag.comm: Homo_sapiens.GRCh37.%
 		`grep -c $$'^\t\t' $<` \
 		`grep -c $$'^\t[^\t]' $<` >$@
 
-uniqtag-design.tsv:
-	printf "%s\t%s\n" >$@ \
-		A B \
-		55 75 \
-		60 75 \
-		65 75 \
-		70 75 \
-		74 75
+%-design.tsv:
+	printf "%s\t%s\t%s\n" >$@ \
+		Table A B \
+		$* 55 75 \
+		$* 60 75 \
+		$* 65 75 \
+		$* 70 75 \
+		$* 74 75
 
-uniqtag-abinitio.tsv: \
-		Homo_sapiens.GRCh37.55.75.pep.abinitio.uniqtag.venn \
-		Homo_sapiens.GRCh37.60.75.pep.abinitio.uniqtag.venn \
-		Homo_sapiens.GRCh37.65.75.pep.abinitio.uniqtag.venn \
-		Homo_sapiens.GRCh37.70.75.pep.abinitio.uniqtag.venn \
-		Homo_sapiens.GRCh37.74.75.pep.abinitio.uniqtag.venn
+%-data.tsv: \
+		Homo_sapiens.GRCh37.55.75.pep.%.venn \
+		Homo_sapiens.GRCh37.60.75.pep.%.venn \
+		Homo_sapiens.GRCh37.65.75.pep.%.venn \
+		Homo_sapiens.GRCh37.70.75.pep.%.venn \
+		Homo_sapiens.GRCh37.74.75.pep.%.venn
 	(printf 'Only.A\tBoth\tOnly.B\n' && cat $^) >$@
 
-uniqtag.tsv: uniqtag-design.tsv uniqtag-abinitio.tsv
+%.tsv: %-design.tsv %-data.tsv
 	paste $^ >$@
 
 %.tsv.md: %.tsv
@@ -96,5 +105,12 @@ uniqtag.tsv: uniqtag-design.tsv uniqtag-abinitio.tsv
 
 %.html: %.md
 	Rscript -e 'markdown::markdownToHTML("$<", "$@")'
+
+uniqtag.tsv: \
+		all.uniqgenemin.gene.tsv \
+		all.uniqgenemin.id.tsv \
+		all.uniqgenemin.seq.tsv \
+		all.uniqgenemin.uniqtag.tsv
+	(head -n1 $< && tail -qn+2 $^) >$@
 
 uniqtag.md: uniqtag.tsv

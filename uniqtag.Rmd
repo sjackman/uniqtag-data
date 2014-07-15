@@ -10,10 +10,20 @@ data <- read.delim('uniqtag.tsv',
 
 # Plot a stacked bar chart of the Venn diagrams
 The intersection of UniqTag identifiers between older builds of the Ensembl human genome and the current build 75.
-```{r ensembl, fig.width=6, fig.height=4, dpi=150}
-barchart(A ~ Both + Only.A + Only.B, data,
+```{r barchart, fig.width=6, fig.height=4, dpi=150}
+barchart(A ~ Only.B + Both + Only.A, data,
 	stack = TRUE,
+	subset = Table == 'all.uniqgenemin.uniqtag',
 	auto.key = list(space = 'bottom', columns = 3),
 	xlab = 'Number of common and different UniqTags\n',	
 	ylab = 'Older Ensembl build')
+```
+
+# Plot the number of common identifiers vs. older build
+```{r xyplot, fig.width=6, fig.height=4, dpi=150}
+xyplot(Both + I(Both + Only.A) ~ A, data, group = Table,
+	type = 'l',
+	auto.key = list(space = 'bottom', columns = 3),
+	xlab = 'Older Ensembl build',
+	ylab = 'Number of common and different features')
 ```

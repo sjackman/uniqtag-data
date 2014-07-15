@@ -1,5 +1,6 @@
 *.comm
 *.fa
+*.gene
 *.gz
 *.html
 *.id
