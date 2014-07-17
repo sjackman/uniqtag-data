@@ -1,17 +1,32 @@
 ```{r libraries, include=FALSE}
+library(ggplot2)
 library(lattice)
+library(RColorBrewer)
+library(reshape2)
 ```
 
 # Read the data
 ```{r data}
-data <- read.delim('uniqtag.tsv',
+data.orig <- read.delim('uniqtag.tsv',
 	colClasses = c(A = 'factor', B = 'factor'))
+x <- do.call(rbind, strsplit(as.character(data.orig$Table), '.', fixed = TRUE))
+colnames(x) <- c('Data', 'Transform', 'Identifier')
+data <- cbind(data.orig, x)
+data$Identifier <- factor(data$Identifier,
+	levels = c('gene', 'id', 'seq', 'uniqtag'),
+	labels = c('Gene', 'ENSP', 'Sequence', 'UniqTag'))
+
+build.wide <- with(data,
+	data.frame(Build.A = A, Build.B = B,
+		Num.A = Only.A + Both, Num.B = Only.B + Both))
+build.tall <- melt(build.wide, id.vars = c('Build.A', 'Build.B'),
+	variable.name = 'Build', value.name = 'Count')
 ```
 
 # Plot a stacked bar chart of the Venn diagrams
 The intersection of UniqTag identifiers between older builds of the Ensembl human genome and the current build 75.
 ```{r barchart, fig.width=6, fig.height=4, dpi=150}
-barchart(A ~ Only.B + Both + Only.A, data,
+barchart(A ~ Only.A + Both + Only.B, data,
 	stack = TRUE,
 	subset = Table == 'all.uniqgenemin.uniqtag',
 	auto.key = list(space = 'bottom', columns = 3),
@@ -20,10 +35,23 @@ barchart(A ~ Only.B + Both + Only.A, data,
 ```
 
 # Plot the number of common identifiers vs. older build
-```{r xyplot, fig.width=6, fig.height=4, dpi=150}
-xyplot(Both + I(Both + Only.A) ~ A, data, group = Table,
-	type = 'l',
-	auto.key = list(space = 'bottom', columns = 3),
-	xlab = 'Older Ensembl build',
-	ylab = 'Number of common and different features')
+```{r ensembl, fig.width=6, fig.height=4, dpi=150}
+aes.data <- aes(x = A, y = Both,
+	group = Identifier, color = Identifier)
+aes.build <- aes(x = Build.A, y = Count,
+	group = Build, color = Build)
+ggplot() +
+	geom_point(aes.data, data) +
+	geom_line(aes.data, data) +
+	geom_point(aes.build, build.tall) +
+	geom_line(aes.build, build.tall, linetype = 'dashed') +
+	theme(legend.position = c(0.8, 0.3), legend.title = element_blank()) +
+	scale_color_manual(
+		breaks = c('Num.B', 'Num.A', 'Gene', 'ENSP', 'UniqTag', 'Sequence'),
+		labels = c('Genes in build 75', 'Genes in older build',
+			'Gene name', 'Protein ID (ENSP)',
+			'UniqTag', 'Polypeptide sequence'),
+		values = rev(brewer.pal(6, 'Dark2'))) +
+	xlab('Older Ensembl build') +
+	ylab('Identifiers in common with build 75')
 ```
