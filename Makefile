@@ -57,19 +57,19 @@ Homo_sapiens.GRCh37.%.pep.abinitio.fa.gz:
 	paste $^ >$@
 
 Homo_sapiens.GRCh37.55.75.%.comm: Homo_sapiens.GRCh37.55.%.sort Homo_sapiens.GRCh37.75.%.sort
-	comm $^ >$@
+	gcomm $^ >$@
 
 Homo_sapiens.GRCh37.60.75.%.comm: Homo_sapiens.GRCh37.60.%.sort Homo_sapiens.GRCh37.75.%.sort
-	comm $^ >$@
+	gcomm $^ >$@
 
 Homo_sapiens.GRCh37.65.75.%.comm: Homo_sapiens.GRCh37.65.%.sort Homo_sapiens.GRCh37.75.%.sort
-	comm $^ >$@
+	gcomm $^ >$@
 
 Homo_sapiens.GRCh37.70.75.%.comm: Homo_sapiens.GRCh37.70.%.sort Homo_sapiens.GRCh37.75.%.sort
-	comm $^ >$@
+	gcomm $^ >$@
 
 Homo_sapiens.GRCh37.74.75.%.comm: Homo_sapiens.GRCh37.74.%.sort Homo_sapiens.GRCh37.75.%.sort
-	comm $^ >$@
+	gcomm $^ >$@
 
 %.venn: %.comm
 	printf "%u\t%u\t%u\n" `grep -c $$'^[^\t]' $<` \
