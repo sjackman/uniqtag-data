@@ -12,6 +12,7 @@
 *.sort
 *.tsv
 *.uniqtag
+*.uniqtagdedup
 *.venn
 .Rhistory
 .Rproj.user
