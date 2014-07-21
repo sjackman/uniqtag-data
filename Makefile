@@ -35,6 +35,10 @@ Homo_sapiens.GRCh37.%.pep.abinitio.fa.gz:
 %.uniqgenemin.fa: %.fa.tsv
 	awk 'x[$$2]++ == 0 { print $$1 " " $$2 "\n" $$3 }' $< >$@
 
+%.allgene.fa: %.fa.tsv
+	awk 'x[$$2]++ == 0 { print $$1 " " $$2 "\n" $$3; next } \
+		{ print "~" $$3 }' $< |seqtk seq - >$@
+
 %.uniqgene.fa: %.fa
 	awk 'x[$$4]++ == 0 { print; getline; print; next } { getline }' $< >$@
 
