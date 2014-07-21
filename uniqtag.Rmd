@@ -12,9 +12,6 @@ data.orig <- read.delim('uniqtag.tsv',
 x <- do.call(rbind, strsplit(as.character(data.orig$Table), '.', fixed = TRUE))
 colnames(x) <- c('Data', 'Transform', 'Identifier')
 data <- cbind(data.orig, x)
-data$Identifier <- factor(data$Identifier,
-	levels = c('gene', 'id', 'seq', 'uniqtag'),
-	labels = c('Gene', 'ENSP', 'Sequence', 'UniqTag'))
 
 build.wide <- with(data,
 	data.frame(Build.A = A, Build.B = B,
@@ -37,21 +34,24 @@ barchart(A ~ Only.A + Both + Only.B, data,
 # Plot the number of common identifiers vs. older build
 ```{r ensembl, fig.width=6, fig.height=4, dpi=150}
 aes.data <- aes(x = A, y = Both,
-	group = Identifier, color = Identifier)
+	group = Table, color = Identifier)
 aes.build <- aes(x = Build.A, y = Count,
-	group = Build, color = Build)
+	group = Build, shape = Build)
 ggplot() +
 	geom_point(aes.data, data) +
 	geom_line(aes.data, data) +
+	scale_color_brewer(palette = 'Set1',
+		breaks = c('gene', 'uniqtag', 'id', 'seq'),
+		labels = c('Gene name', 'UniqTag',
+			'Protein ID (ENSP)', 'Polypeptide sequence')) +
+
 	geom_point(aes.build, build.tall) +
 	geom_line(aes.build, build.tall, linetype = 'dashed') +
-	theme(legend.position = c(0.8, 0.3), legend.title = element_blank()) +
-	scale_color_manual(
-		breaks = c('Num.B', 'Num.A', 'Gene', 'ENSP', 'UniqTag', 'Sequence'),
-		labels = c('Genes in build 75', 'Genes in older build',
-			'Gene name', 'Protein ID (ENSP)',
-			'UniqTag', 'Polypeptide sequence'),
-		values = rev(brewer.pal(6, 'Dark2'))) +
+	scale_shape(name = 'Number of genes',
+		breaks = c('Num.B', 'Num.A'),
+		labels = c('Ensembl build 75', 'Older Ensembl build')) +
+
+	theme(legend.position = c(0.8, 0.35)) +
 	xlab('Older Ensembl build') +
-	ylab('Identifiers in common with build 75')
+	ylab('Identifiers in common with Ensembl build 75')
 ```
