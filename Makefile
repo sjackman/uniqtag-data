@@ -60,8 +60,11 @@ Homo_sapiens.GRCh37.%.pep.abinitio.fa.gz:
 %.id: %.fa
 	sed -En 's/^>([^ ]*).*/\1/p' $< >$@
 
-%.id-uniqtag: %.id %.uniqtag
-	paste $^ >$@
+%.tsv: %.gene %.id %.uniqtag
+	(printf "gene\tid\tuniqtag\n" && paste $^) >$@
+
+Homo_sapiens.GRCh37.70.75.%.tsv: Homo_sapiens.GRCh37.70.%.tsv Homo_sapiens.GRCh37.75.%.tsv
+	join $^ |tr ' ' '\t' >$@
 
 Homo_sapiens.Ensembl.50.75.%.comm: Homo_sapiens.NCBI36.50.%.sort Homo_sapiens.GRCh37.75.%.sort
 	gcomm $^ >$@
