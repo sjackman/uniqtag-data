@@ -1,6 +1,9 @@
 all: uniqtag.tsv uniqtag.html
 
-.PHONY: all
+clean:
+	rm -f *.comm *.gene *.id *.seq *.sort *.tsv *.uniqtag *.venn
+
+.PHONY: all clean
 .DELETE_ON_ERROR:
 .SECONDARY:
 
