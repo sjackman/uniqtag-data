@@ -48,11 +48,8 @@ Homo_sapiens.GRCh37.%.pep.abinitio.fa.gz:
 %.uniqseq.fa: %.fa
 	bioawk -cfastx 'x[$$seq]++ == 0 { print ">" $$name " " $$comment "\n" $$seq }' $< >$@
 
-%.uniqtagdedup: %.fa
+%.uniqtag: %.fa
 	uniqtag $< >$@
-
-%.uniqtag: %.uniqtagdedup
-	sed 's/-.*//' $< >$@
 
 %.sort: %
 	sort $< >$@
