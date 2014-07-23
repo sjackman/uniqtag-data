@@ -3,6 +3,7 @@ library(ggplot2)
 library(lattice)
 library(RColorBrewer)
 library(reshape2)
+library(scales)
 ```
 
 # Read the data
@@ -32,7 +33,7 @@ barchart(A ~ Only.A + Both + Only.B, data,
 ```
 
 # Plot the number of common identifiers vs. older build
-```{r ensembl, fig.width=6, fig.height=4, dpi=150}
+```{r ensembl, fig.width=6, fig.height=5, dpi=150}
 aes.data <- aes(x = A, y = Both,
 	group = Table, color = Identifier)
 aes.build <- aes(x = Build.A, y = Count,
@@ -51,7 +52,11 @@ ggplot() +
 		breaks = c('Num.B', 'Num.A'),
 		labels = c('Ensembl build 75', 'Older Ensembl build')) +
 
-	theme(legend.position = 'right') +
+	theme_bw() +
+	theme(legend.position = c(1.0, 0),
+		legend.justification = c(1, 0),
+		legend.box.just = 'right',
+		legend.background = element_rect(fill = alpha('white', 0))) +
 	xlab('Older Ensembl build') +
 	ylab('Identifiers in common with Ensembl build 75')
 ```
