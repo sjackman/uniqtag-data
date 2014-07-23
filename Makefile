@@ -17,6 +17,12 @@ cds_aa.orig.fa cds_na.orig.fa: %.fa:
 	esearch -db nuccore -query '$*[Title] "Primary Assembly"[Title]' \
 		|efetch -format fasta_cds_aa >$@
 
+Homo_sapiens.NCBI36.40.pep.all.fa.gz:
+	wget ftp://ftp.ensembl.org/pub/release-40/homo_sapiens_40_36b/data/fasta/pep/Homo_sapiens.NCBI36.40.pep.all.fa.gz
+
+Homo_sapiens.NCBI36.45.pep.all.fa.gz:
+	wget ftp://ftp.ensembl.org/pub/release-45/homo_sapiens_45_36g/data/fasta/pep/Homo_sapiens.NCBI36.45.pep.all.fa.gz
+
 Homo_sapiens.NCBI36.%.pep.all.fa.gz:
 	wget ftp://ftp.ensembl.org/pub/release-$*/fasta/homo_sapiens/pep/Homo_sapiens.NCBI36.$*.pep.all.fa.gz
 
@@ -66,6 +72,12 @@ Homo_sapiens.GRCh37.%.pep.abinitio.fa.gz:
 Homo_sapiens.GRCh37.70.75.%.tsv: Homo_sapiens.GRCh37.70.%.tsv Homo_sapiens.GRCh37.75.%.tsv
 	join $^ |tr ' ' '\t' >$@
 
+Homo_sapiens.Ensembl.40.75.%.comm: Homo_sapiens.NCBI36.40.%.sort Homo_sapiens.GRCh37.75.%.sort
+	gcomm $^ >$@
+
+Homo_sapiens.Ensembl.45.75.%.comm: Homo_sapiens.NCBI36.45.%.sort Homo_sapiens.GRCh37.75.%.sort
+	gcomm $^ >$@
+
 Homo_sapiens.Ensembl.50.75.%.comm: Homo_sapiens.NCBI36.50.%.sort Homo_sapiens.GRCh37.75.%.sort
 	gcomm $^ >$@
 
@@ -92,6 +104,8 @@ Homo_sapiens.GRCh37.74.75.%.comm: Homo_sapiens.GRCh37.74.%.sort Homo_sapiens.GRC
 %-design.tsv:
 	printf "%s\t%s\t%s\n" >$@ \
 		Table A B \
+		$* 40 75 \
+		$* 45 75 \
 		$* 50 75 \
 		$* 55 75 \
 		$* 60 75 \
@@ -100,6 +114,8 @@ Homo_sapiens.GRCh37.74.75.%.comm: Homo_sapiens.GRCh37.74.%.sort Homo_sapiens.GRC
 		$* 74 75
 
 %-data.tsv: \
+		Homo_sapiens.Ensembl.40.75.pep.%.venn \
+		Homo_sapiens.Ensembl.45.75.pep.%.venn \
 		Homo_sapiens.Ensembl.50.75.pep.%.venn \
 		Homo_sapiens.GRCh37.55.75.pep.%.venn \
 		Homo_sapiens.GRCh37.60.75.pep.%.venn \
