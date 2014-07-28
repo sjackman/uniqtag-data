@@ -51,18 +51,14 @@ Homo_sapiens.GRCh37.%.pep.all.fa.gz:
 %.all.fa.tsv: %.all.fa
 	awk -vORS='' '{print $$1 "\t" $$4; getline; print "\t" $$0 "\n" }' $< |sort -k2,2 -k1 >$@
 
-# Keep the lowest-numbered protein for each gene
-%.uniqgenemin.fa: %.fa.tsv
+# Keep the first protein isoform in the FASTA file
+%.uniqgene.fa: %.fa
 	awk 'x[$$2]++ == 0 { print $$1 " " $$2 "\n" $$3 }' $< >$@
 
 # Join all protein isoforms separated by tilde
 %.allgene.fa: %.fa.tsv
 	awk 'x[$$2]++ == 0 { print $$1 " " $$2 "\n" $$3; next } \
 		{ print "~" $$3 }' $< |seqtk seq - >$@
-
-# Keep the first protein isoform in the FASTA file
-%.uniqgene.fa: %.fa
-	awk 'x[$$4]++ == 0 { print; getline; print; next } { getline }' $< >$@
 
 # Extract the gene name from the FASTA header
 %.gene: %.fa
@@ -152,10 +148,10 @@ Homo_sapiens.GRCh37.74.75.%.comm: Homo_sapiens.GRCh37.74.%.sort Homo_sapiens.GRC
 
 # Compute the data table
 uniqtag.tsv: \
-		all.uniqgenemin.gene.tsv \
-		all.uniqgenemin.id.tsv \
-		all.uniqgenemin.seq.tsv \
-		all.uniqgenemin.uniqtag.tsv
+		all.uniqgene.gene.tsv \
+		all.uniqgene.id.tsv \
+		all.uniqgene.seq.tsv \
+		all.uniqgene.uniqtag.tsv
 	(head -n1 $< && tail -qn+2 $^) >$@
 
 # Generating uniqtag.md requires uniqtag.tsv
