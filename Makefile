@@ -69,11 +69,11 @@ Homo_sapiens.GRCh37.%.pep.all.fa.gz:
 	sed -En 's/^>([^ ]*).*/\1/p' $< >$@
 
 # Compute the UniqTag for each sequence in the FASTA file
-%.uniqtag: %.fa
-	uniqtag $< >$@
+%.uniqtag7: %.fa
+	uniqtag -k7 $< >$@
 
 # Join the gene name, ID and UniqTag into a TSV file
-%.tsv: %.gene %.id %.uniqtag
+%.tsv: %.gene %.id %.uniqtag7
 	(printf "gene\tid\tuniqtag\n" && paste $^) >$@
 
 # Join the TSV of identifiers of two builds on the gene name
@@ -151,7 +151,7 @@ uniqtag.tsv: \
 		all.uniqgene.gene.tsv \
 		all.uniqgene.id.tsv \
 		all.uniqgene.seq.tsv \
-		all.uniqgene.uniqtag.tsv
+		all.uniqgene.uniqtag7.tsv
 	(head -n1 $< && tail -qn+2 $^) >$@
 
 # Generating uniqtag.md requires uniqtag.tsv

@@ -42,7 +42,7 @@ ggplot() +
 	geom_point(aes.data, data) +
 	geom_line(aes.data, data) +
 	scale_color_brewer(palette = 'Set1',
-		breaks = c('gene', 'uniqtag', 'id', 'seq'),
+		breaks = c('gene', 'uniqtag7', 'id', 'seq'),
 		labels = c('Gene name', 'UniqTag',
 			'Protein ID (ENSP)', 'Polypeptide sequence')) +
 
