@@ -5,7 +5,6 @@ author: 'Shaun Jackman'
 
 ```{r install.packages, eval=FALSE, include=FALSE}
 install.packages('ggplot2')
-install.packages('lattice')
 install.packages('reshape2')
 install.packages('scales')
 ```
@@ -13,7 +12,6 @@ install.packages('scales')
 # Load libraries
 ```{r libraries}
 library(ggplot2)
-library(lattice)
 library(reshape2)
 library(scales) # for alpha
 ```
@@ -33,18 +31,8 @@ build.tall <- melt(build.wide, id.vars = c('Build.A', 'Build.B'),
 	variable.name = 'Build', value.name = 'Count')
 ```
 
-# Plot a stacked bar chart of the Venn diagrams
-The intersection of UniqTag identifiers between older builds of the Ensembl human genome and the current build 75.
-```{r barchart, fig.width=6, fig.height=4, dpi=150}
-barchart(A ~ Only.A + Both + Only.B, data,
-	stack = TRUE,
-	subset = Table == 'all.uniqgenemin.uniqtag',
-	auto.key = list(space = 'bottom', columns = 3),
-	xlab = 'Number of common and different UniqTags\n',	
-	ylab = 'Older Ensembl build')
-```
-
 # Plot the number of common identifiers vs. older build
+The intersection of gene name, Protein ID (ENSP), exact sequence and UniqTag identifiers between older builds of the Ensembl human genome and the current build 75.
 ```{r ensembl, fig.width=6, fig.height=5, dpi=150}
 aes.data <- aes(x = A, y = Both,
 	group = Table, color = Identifier)
