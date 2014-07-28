@@ -1,5 +1,5 @@
 ---
-title: 'Supplementary material of UniqTag: Content-derived unique and stable identifiers for gene annotation'
+title: 'Supplementary material for UniqTag: Content-derived unique and stable identifiers for gene annotation'
 author: 'Shaun Jackman'
 ---
 
