@@ -1,9 +1,21 @@
-```{r libraries, include=FALSE}
+---
+title: 'Supplementary material of UniqTag: Content-derived unique and stable identifiers for gene annotation'
+author: 'Shaun Jackman'
+---
+
+```{r install.packages, eval=FALSE, include=FALSE}
+install.packages('ggplot2')
+install.packages('lattice')
+install.packages('reshape2')
+install.packages('scales')
+```
+
+# Load libraries
+```{r libraries}
 library(ggplot2)
 library(lattice)
-library(RColorBrewer)
 library(reshape2)
-library(scales)
+library(scales) # for alpha
 ```
 
 # Read the data
