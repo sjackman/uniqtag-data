@@ -23,6 +23,8 @@ data.orig <- read.delim('uniqtag.tsv',
 x <- do.call(rbind, strsplit(as.character(data.orig$Table), '.', fixed = TRUE))
 colnames(x) <- c('Data', 'Transform', 'Identifier')
 data <- cbind(data.orig, x)
+rm(x)
+data$k <- as.integer(gsub('^[a-z]*', '', data$Identifier))
 
 build.wide <- with(data,
 	data.frame(Build.A = A, Build.B = B,
@@ -34,17 +36,18 @@ build.tall <- melt(build.wide, id.vars = c('Build.A', 'Build.B'),
 # Plot the number of common identifiers vs. older build
 The intersection of gene name, Protein ID (ENSP), exact sequence and UniqTag identifiers between older builds of the Ensembl human genome and the current build 75.
 ```{r ensembl, fig.width=6, fig.height=5, dpi=150}
+data.subset <- subset(data, data$k == 9 | is.na(data$k))
 aes.data <- aes(x = A, y = Both,
 	group = Table, color = Identifier)
 aes.build <- aes(x = Build.A, y = Count,
 	group = Build, shape = Build)
 ggplot() +
-	geom_point(aes.data, data) +
-	geom_line(aes.data, data) +
+	geom_point(aes.data, data.subset) +
+	geom_line(aes.data, data.subset) +
 	scale_color_brewer(palette = 'Set1',
-		breaks = c('gene', 'uniqtag7', 'id', 'seq'),
+		breaks = c('gene', 'uniqtag9', 'id', 'seq'),
 		labels = c('Gene name', 'UniqTag',
-			'Protein ID (ENSP)', 'Polypeptide sequence')) +
+			'Protein ID (ENSP)', 'Identical peptide sequence')) +
 
 	geom_point(aes.build, build.tall) +
 	geom_line(aes.build, build.tall, linetype = 'dashed') +
@@ -58,5 +61,19 @@ ggplot() +
 		legend.box.just = 'right',
 		legend.background = element_rect(fill = alpha('white', 0))) +
 	xlab('Older Ensembl build') +
+	ylab('Identifiers in common with Ensembl build 75')
+```
+
+# Plot the number of common identifiers vs. k
+```{r k, fig.width=6, fig.height=5, dpi=150}
+ggplot(na.omit(data), aes(x = k, y = Both, group = A, color = A)) +
+	geom_point() +
+	geom_line() +
+	scale_x_continuous(trans = log_trans(),
+		breaks = c(1, 2, 5, 10, 20, 50, 100, 200)) +
+	scale_color_brewer(palette = 'Set2') +
+	guides(color = guide_legend(reverse = TRUE)) +
+	theme_bw() +
+	xlab('Size of UniqTag k-mer (bp)') +
 	ylab('Identifiers in common with Ensembl build 75')
 ```
