@@ -10,7 +10,7 @@ install.packages('scales')
 ```
 
 # Load libraries
-```{r libraries}
+```{r libraries, message=FALSE}
 library(ggplot2)
 library(reshape2)
 library(scales) # for alpha
