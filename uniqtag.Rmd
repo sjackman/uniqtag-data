@@ -3,6 +3,10 @@ title: 'Supplementary material for UniqTag: Content-derived unique and stable id
 author: 'Shaun Jackman'
 ---
 
+# Supplementary material
+
+The following supplementary material of the UniqTag paper give the R code and the data, shown in supplementary table S1, used to generate figure 1 from the main material of the paper and supplementary figure S1.
+
 ```{r install.packages, eval=FALSE, include=FALSE}
 install.packages('ggplot2')
 install.packages('kable')
