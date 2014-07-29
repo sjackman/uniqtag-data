@@ -3,6 +3,10 @@ title: 'Supplementary material for UniqTag: Content-derived unique and stable id
 author: 'Shaun Jackman'
 ---
 
+# Supplementary material
+
+The following supplementary material of the UniqTag paper give the R code and the data, shown in supplementary table S1, used to generate figure 1 from the main material of the paper and supplementary figure S1.
+
 
 
 # Load libraries
@@ -33,7 +37,7 @@ build.tall <- melt(build.wide, id.vars = c('Build.A', 'Build.B'),
 ```
 
 # Figure 1. Plot the number of common identifiers vs. older build
-The number of common identifiers between older builds of the Ensembl human genome and the current build 75 for gene name, Protein ID (ENSP), exact peptide sequence and UniqTag.
+The number of common identifiers between older builds of the Ensembl human genome and the current build 75 for gene ID (ENSG), protein ID (ENSP), exact peptide sequence and UniqTag.
 
 ```r
 data.subset <- subset(data, data$k == 9 | is.na(data$k))
@@ -46,7 +50,7 @@ ggplot() +
 	geom_line(aes.data, data.subset) +
 	scale_colour_brewer(palette = 'Set1',
 		breaks = c('gene', 'uniqtag9', 'id', 'seq'),
-		labels = c('Gene name', 'UniqTag',
+		labels = c('Gene ID (ENSG)', 'UniqTag (9-mer)',
 			'Protein ID (ENSP)', 'Identical peptide sequence')) +
 
 	geom_point(aes.build, build.tall) +
@@ -85,7 +89,7 @@ ggplot(na.omit(data), aes(x = k, y = Both, group = A, colour = A)) +
 ![plot of chunk k](figure/k.png) 
 
 # Table S1. The number of common identifiers
-The number of common identifiers between older builds of the Ensembl human genome and the current build 75 for gene name, Protein ID (ENSP), exact peptide sequence and UniqTag for different values of k. These data are used to plot the above figures. It is also available in tab-separated values (TSV) format.
+The number of common identifiers between older builds of the Ensembl human genome and the current build 75 for gene ID (ENSG), protein ID (ENSP), exact peptide sequence and UniqTag for different values of k. These data are used to plot the above figures. It is also available in tab-separated values (TSV) format.
 
 ```r
 kable(data)
