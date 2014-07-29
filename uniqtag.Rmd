@@ -5,6 +5,7 @@ author: 'Shaun Jackman'
 
 ```{r install.packages, eval=FALSE, include=FALSE}
 install.packages('ggplot2')
+install.packages('kable')
 install.packages('reshape2')
 install.packages('scales')
 ```
@@ -12,6 +13,7 @@ install.packages('scales')
 # Load libraries
 ```{r libraries, message=FALSE}
 library(ggplot2)
+library(knitr) # for kable
 library(reshape2)
 library(scales) # for alpha
 ```
@@ -33,8 +35,8 @@ build.tall <- melt(build.wide, id.vars = c('Build.A', 'Build.B'),
 	variable.name = 'Build', value.name = 'Count')
 ```
 
-# Plot the number of common identifiers vs. older build
-The intersection of gene name, Protein ID (ENSP), exact sequence and UniqTag identifiers between older builds of the Ensembl human genome and the current build 75.
+# Figure 1. Plot the number of common identifiers vs. older build
+The number of common identifiers between older builds of the Ensembl human genome and the current build 75 for gene name, Protein ID (ENSP), exact peptide sequence and UniqTag.
 ```{r ensembl, fig.width=6, fig.height=5, dpi=150}
 data.subset <- subset(data, data$k == 9 | is.na(data$k))
 aes.data <- aes(x = A, y = Both,
@@ -64,7 +66,8 @@ ggplot() +
 	ylab('Identifiers in common with Ensembl build 75')
 ```
 
-# Plot the number of common identifiers vs. k
+# Figure S1. Plot the number of common identifiers vs. k
+The number of common UniqTag identifiers between older builds of the Ensembl human genome and the current build 75 for different values of k.
 ```{r k, fig.width=6, fig.height=5, dpi=150}
 ggplot(na.omit(data), aes(x = k, y = Both, group = A, colour = A)) +
 	geom_point() +
@@ -76,4 +79,10 @@ ggplot(na.omit(data), aes(x = k, y = Both, group = A, colour = A)) +
 	theme_bw() +
 	xlab('Size of UniqTag k-mer (bp)') +
 	ylab('Identifiers in common with Ensembl build 75')
+```
+
+# Table S1. The number of common identifiers
+The number of common identifiers between older builds of the Ensembl human genome and the current build 75 for gene name, Protein ID (ENSP), exact peptide sequence and UniqTag for different values of k. These data are used to plot the above figures. It is also available in tab-separated values (TSV) format.
+```{r data-table, results='asis'}
+kable(data)
 ```
