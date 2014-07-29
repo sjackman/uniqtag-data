@@ -3,7 +3,7 @@
 # Copyright 2014 Shaun Jackman
 
 # Download the data, compute the results and render the figures and report
-all: uniqtag.tsv uniqtag.md uniqtag.html uniqtag.pdf
+all: uniqtag.tsv README.md index.html UniqTag-supp.pdf
 
 # Remove all computed files
 clean:
@@ -167,18 +167,15 @@ uniqtag.tsv: \
 		all.uniqgene.uniqtag200.tsv
 	(head -n1 $< && tail -qn+2 $^) >$@
 
-# Generating uniqtag.md requires uniqtag.tsv
-uniqtag.md: uniqtag.tsv
-
 # Generate the Markdown from the RMarkdown
-%.md: %.Rmd
+README.md: uniqtag.Rmd uniqtag.tsv
 	Rscript -e 'knitr::knit("$<", "$@")'
 	mogrify -units PixelsPerInch -density 300 figure/*.png
 
 # Generate the HTML from the Markdown
-%.html: %.Rmd
+index.html: uniqtag.Rmd uniqtag.tsv
 	Rscript -e 'rmarkdown::render("$<", "html_document", "$@")'
 
 # Generate the PDF from the Markdown
-%.pdf: %.Rmd
+UniqTag-supp.pdf: uniqtag.Rmd uniqtag.tsv
 	Rscript -e 'rmarkdown::render("$<", "pdf_document", "$@")'
