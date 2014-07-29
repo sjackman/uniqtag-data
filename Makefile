@@ -3,7 +3,7 @@
 # Copyright 2014 Shaun Jackman
 
 # Download the data, compute the results and render the figures and report
-all: uniqtag.tsv uniqtag.html
+all: uniqtag.tsv uniqtag.md uniqtag.html uniqtag.pdf
 
 # Remove all computed files
 clean:
@@ -176,5 +176,9 @@ uniqtag.md: uniqtag.tsv
 	mogrify -units PixelsPerInch -density 300 figure/*.png
 
 # Generate the HTML from the Markdown
-%.html: %.md
-	Rscript -e 'markdown::markdownToHTML("$<", "$@")'
+%.html: %.Rmd
+	Rscript -e 'rmarkdown::render("$<", "html_document", "$@")'
+
+# Generate the PDF from the Markdown
+%.pdf: %.Rmd
+	Rscript -e 'rmarkdown::render("$<", "pdf_document", "$@")'
