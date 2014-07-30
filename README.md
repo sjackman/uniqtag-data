@@ -37,14 +37,14 @@ build.tall <- melt(build.wide, id.vars = c('Build.A', 'Build.B'),
 ```
 
 # Figure 1. Plot the number of common identifiers vs. older build
-The number of common identifiers between older builds of the Ensembl human genome and the current build 75 for gene ID (ENSG), protein ID (ENSP), exact peptide sequence and UniqTag.
+The number of common UniqTag identifiers between older builds of the Ensembl human genome and the current build 75, the number of common gene and protein identifiers between builds, and the number of genes with peptide sequences that are identical between builds.
 
 ```r
 data.subset <- subset(data, data$k == 9 | is.na(data$k))
 aes.data <- aes(x = A, y = Both,
 	group = Table, colour = Identifier)
 aes.build <- aes(x = Build.A, y = Count,
-	group = Build, shape = Build)
+	group = Build, linetype = Build, shape = Build)
 ggplot() +
 	geom_point(aes.data, data.subset) +
 	geom_line(aes.data, data.subset) +
@@ -54,10 +54,15 @@ ggplot() +
 			'Protein ID (ENSP)', 'Identical peptide sequence')) +
 
 	geom_point(aes.build, build.tall) +
-	geom_line(aes.build, build.tall, linetype = 'dashed') +
-	scale_shape(name = 'Number of genes',
+	geom_line(aes.build, build.tall) +
+	scale_linetype_manual(name = 'Number of genes',
 		breaks = c('Num.B', 'Num.A'),
-		labels = c('Ensembl build 75', 'Older Ensembl build')) +
+		labels = c('Ensembl build 75', 'Older Ensembl build'),
+		values = c('solid', 'dashed')) +
+	scale_shape_manual(name = 'Number of genes',
+		breaks = c('Num.B', 'Num.A'),
+		labels = c('Ensembl build 75', 'Older Ensembl build'),
+		values = c(20, 32)) +
 
 	theme_bw() +
 	theme(legend.position = c(1.0, 0),
