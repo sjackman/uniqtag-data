@@ -46,7 +46,7 @@ data.subset <- subset(data, data$k == 9 | is.na(data$k))
 aes.data <- aes(x = A, y = Both,
 	group = Table, colour = Identifier)
 aes.build <- aes(x = Build.A, y = Count,
-	group = Build, shape = Build)
+	group = Build, linetype = Build, shape = Build)
 ggplot() +
 	geom_point(aes.data, data.subset) +
 	geom_line(aes.data, data.subset) +
@@ -56,10 +56,15 @@ ggplot() +
 			'Protein ID (ENSP)', 'Identical peptide sequence')) +
 
 	geom_point(aes.build, build.tall) +
-	geom_line(aes.build, build.tall, linetype = 'dashed') +
-	scale_shape(name = 'Number of genes',
+	geom_line(aes.build, build.tall) +
+	scale_linetype_manual(name = 'Number of genes',
 		breaks = c('Num.B', 'Num.A'),
-		labels = c('Ensembl build 75', 'Older Ensembl build')) +
+		labels = c('Ensembl build 75', 'Older Ensembl build'),
+		values = c('solid', 'dashed')) +
+	scale_shape_manual(name = 'Number of genes',
+		breaks = c('Num.B', 'Num.A'),
+		labels = c('Ensembl build 75', 'Older Ensembl build'),
+		values = c(20, 32)) +
 
 	theme_bw() +
 	theme(legend.position = c(1.0, 0),
