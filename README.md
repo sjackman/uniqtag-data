@@ -1,6 +1,9 @@
 ---
 title: 'Supplementary material for UniqTag: Content-derived unique and stable identifiers for gene annotation'
 author: 'Shaun Jackman'
+output:
+  html_document:
+    highlight: pygments
 ---
 
 # Supplementary material
@@ -92,6 +95,261 @@ ggplot(na.omit(data), aes(x = k, y = Both, group = A, colour = A)) +
 ```
 
 ![plot of chunk k](figure/k.png) 
+
+# Listing S1. UniqTag 1.0
+This listing shows the source of UniqTag 1.0, implemented in Ruby.
+```ruby
+#!/usr/bin/env ruby
+# Determine a unique substring (k-mer) of each string
+# Copyright 2014 Shaun Jackman
+
+require 'optparse'
+
+class String
+  # Iterate over each k-mer
+  def each_kmer k
+    return enum_for(:each_kmer, k) unless block_given?
+    (0 .. length - k).each { |i|
+      kmer = self[i, k]
+      yield kmer unless kmer =~ /~/
+    }
+  end
+end
+
+class Array
+  # Append a serial number to distinguish duplicate strings
+  def dedup
+    each_with_object(Hash.new(0)).map { |x, count|
+      "#{x}-#{count[x] += 1}"
+    }
+  end
+end
+
+# Count the k-mers in a set of strings
+def count_kmer seqs, k
+  seqs.each_with_object(Hash.new(0)) { |seq, counts|
+    seq.each_kmer(k).to_a.uniq.each { |kmer|
+      counts[kmer] += 1
+    }
+  }
+end
+
+# Return the unique tag of the specified string
+def get_tag seq, kmer_counts, k
+  _, tag = seq.each_kmer(k).map { |kmer|
+    [kmer_counts[kmer], kmer]
+  }.min
+  tag || seq.split('~').min
+end
+
+# Parse command line options
+k = 9
+OptionParser.new do |opts|
+  opts.banner = "Usage: uniqtag [-k N] [FILE]..."
+  opts.version = "0.1.0"
+  opts.release = nil
+
+  opts.on("-k", "--kmer N", OptionParser::DecimalInteger,
+      "Size of the unique tag (default 9)") do |n|
+    k = n
+  end
+end.parse!
+
+# Read strings and write unique tags
+seqs = ARGF.each_line.reject { |s|
+  s =~ /^>/
+}.map { |s|
+  s.chomp.upcase
+}
+kmer_counts = count_kmer seqs, k
+puts seqs.map { |seq| get_tag(seq, kmer_counts, k) }.dedup
+```
+
+# Listing S2. Calculate the number of common identifiers
+This *Makefile* script calculates number of common identifiers between older builds of the Ensembl human genome and the current build 75 for gene ID (ENSG), protein ID (ENSP), identical peptide sequence and UniqTag for different values of k.
+```makefile
+# The supplementary material for the UniqTag paper
+# UniqTag: Content-derived unique and stable identifiers for gene annotation
+# Copyright 2014 Shaun Jackman
+
+# Download the data, compute the results and render the figures and report
+all: uniqtag.tsv README.md index.html UniqTag-supp.pdf
+
+# Remove all computed files
+clean:
+	rm -f *.comm *.gene *.id *.seq *.sort *.tsv *.uniqtag *.venn
+
+# Install dependencies
+install-deps: /usr/local/bin/brew
+	brew install coreutils imagemagick r seqtk uniqtag wget
+
+# Check for Homebrew
+/usr/local/bin/brew:
+	@if brew --version >/dev/null 2>/dev/null; then \
+		echo Install Homebrew http://brew.sh/ or Linuxbrew http://brew.sh/linuxbrew/; \
+	fi
+
+.PHONY: all clean install-deps
+.DELETE_ON_ERROR:
+.SECONDARY:
+
+# Download Ensembl Human genome NCBI36 build 40
+Homo_sapiens.NCBI36.40.pep.all.fa.gz:
+	wget ftp://ftp.ensembl.org/pub/release-40/homo_sapiens_40_36b/data/fasta/pep/Homo_sapiens.NCBI36.40.pep.all.fa.gz
+
+# Download Ensembl Human genome NCBI36 build 45
+Homo_sapiens.NCBI36.45.pep.all.fa.gz:
+	wget ftp://ftp.ensembl.org/pub/release-45/homo_sapiens_45_36g/data/fasta/pep/Homo_sapiens.NCBI36.45.pep.all.fa.gz
+
+# Download Ensembl Human genome NCBI36
+Homo_sapiens.NCBI36.%.pep.all.fa.gz:
+	wget ftp://ftp.ensembl.org/pub/release-$*/fasta/homo_sapiens/pep/Homo_sapiens.NCBI36.$*.pep.all.fa.gz
+
+# Download Ensembl Human genome GRCh37
+Homo_sapiens.GRCh37.%.pep.all.fa.gz:
+	wget ftp://ftp.ensembl.org/pub/release-$*/fasta/homo_sapiens/pep/Homo_sapiens.GRCh37.$*.pep.all.fa.gz
+
+# Uncompress FASTA and remove line breaks
+%.fa: %.fa.gz
+	seqtk seq $< >$@
+
+# Remove the headers from a FASTA file
+%.seq: %.fa
+	grep -v '^>' $< >$@
+
+# Convert a FASTA file to sorted TSV of ID, gene name and sequence
+%.all.fa.tsv: %.all.fa
+	awk -vORS='' '{print $$1 "\t" $$4; getline; print "\t" $$0 "\n" }' $< |sort -k2,2 -k1 >$@
+
+# Keep the first protein isoform in the FASTA file
+%.uniqgene.fa: %.fa
+	awk 'x[$$2]++ == 0 { print $$1 " " $$2 "\n" $$3 }' $< >$@
+
+# Join all protein isoforms separated by tilde
+%.allgene.fa: %.fa.tsv
+	awk 'x[$$2]++ == 0 { print $$1 " " $$2 "\n" $$3; next } \
+		{ print "~" $$3 }' $< |seqtk seq - >$@
+
+# Extract the gene name from the FASTA header
+%.gene: %.fa
+	sed -En 's/^>.*gene:([^ ]*).*/\1/p' $< >$@
+
+# Extract the ID from the FASTA header
+%.id: %.fa
+	sed -En 's/^>([^ ]*).*/\1/p' $< >$@
+
+# Compute the UniqTag for each sequence in the FASTA file
+ks=1 2 3 4 5 6 7 8 9 10 20 50 100 200
+$(foreach k, $(ks), $(eval %.uniqtag$k: %.fa; uniqtag -k$k $$< >$$@))
+
+# Join the gene name, ID and UniqTag into a TSV file
+%.tsv: %.gene %.id %.uniqtag7
+	(printf "gene\tid\tuniqtag\n" && paste $^) >$@
+
+# Join the TSV of identifiers of two builds on the gene name
+Homo_sapiens.GRCh37.70.75.%.tsv: Homo_sapiens.GRCh37.70.%.tsv Homo_sapiens.GRCh37.75.%.tsv
+	join $^ |tr ' ' '\t' >$@
+
+# Sort the file
+%.sort: %
+	sort $< >$@
+
+# Compare an older Ensembl build to build 75
+# Note: BSD comm has a bug possibly related to long lines and so GNU comm is
+# used instead.
+Homo_sapiens.Ensembl.40.75.%.comm: Homo_sapiens.NCBI36.40.%.sort Homo_sapiens.GRCh37.75.%.sort
+	gcomm $^ >$@
+
+Homo_sapiens.Ensembl.45.75.%.comm: Homo_sapiens.NCBI36.45.%.sort Homo_sapiens.GRCh37.75.%.sort
+	gcomm $^ >$@
+
+Homo_sapiens.Ensembl.50.75.%.comm: Homo_sapiens.NCBI36.50.%.sort Homo_sapiens.GRCh37.75.%.sort
+	gcomm $^ >$@
+
+Homo_sapiens.GRCh37.55.75.%.comm: Homo_sapiens.GRCh37.55.%.sort Homo_sapiens.GRCh37.75.%.sort
+	gcomm $^ >$@
+
+Homo_sapiens.GRCh37.60.75.%.comm: Homo_sapiens.GRCh37.60.%.sort Homo_sapiens.GRCh37.75.%.sort
+	gcomm $^ >$@
+
+Homo_sapiens.GRCh37.65.75.%.comm: Homo_sapiens.GRCh37.65.%.sort Homo_sapiens.GRCh37.75.%.sort
+	gcomm $^ >$@
+
+Homo_sapiens.GRCh37.70.75.%.comm: Homo_sapiens.GRCh37.70.%.sort Homo_sapiens.GRCh37.75.%.sort
+	gcomm $^ >$@
+
+Homo_sapiens.GRCh37.74.75.%.comm: Homo_sapiens.GRCh37.74.%.sort Homo_sapiens.GRCh37.75.%.sort
+	gcomm $^ >$@
+
+# Count the overlap of two sets
+%.venn: %.comm
+	printf "%u\t%u\t%u\n" `grep -c $$'^[^\t]' $<` \
+		`grep -c $$'^\t\t' $<` \
+		`grep -c $$'^\t[^\t]' $<` >$@
+
+# Create the experimental design table
+%-design.tsv:
+	printf "%s\t%s\t%s\n" >$@ \
+		Table A B \
+		$* 40 75 \
+		$* 45 75 \
+		$* 50 75 \
+		$* 55 75 \
+		$* 60 75 \
+		$* 65 75 \
+		$* 70 75 \
+		$* 74 75
+
+# Compute the experimental data table
+%-data.tsv: \
+		Homo_sapiens.Ensembl.40.75.pep.%.venn \
+		Homo_sapiens.Ensembl.45.75.pep.%.venn \
+		Homo_sapiens.Ensembl.50.75.pep.%.venn \
+		Homo_sapiens.GRCh37.55.75.pep.%.venn \
+		Homo_sapiens.GRCh37.60.75.pep.%.venn \
+		Homo_sapiens.GRCh37.65.75.pep.%.venn \
+		Homo_sapiens.GRCh37.70.75.pep.%.venn \
+		Homo_sapiens.GRCh37.74.75.pep.%.venn
+	(printf 'Only.A\tBoth\tOnly.B\n' && cat $^) >$@
+
+# Join the experimental design and data tables
+%.tsv: %-design.tsv %-data.tsv
+	paste $^ >$@
+
+# Compute the data table
+uniqtag.tsv: \
+		all.uniqgene.gene.tsv \
+		all.uniqgene.id.tsv \
+		all.uniqgene.seq.tsv \
+		all.uniqgene.uniqtag1.tsv \
+		all.uniqgene.uniqtag2.tsv \
+		all.uniqgene.uniqtag3.tsv \
+		all.uniqgene.uniqtag4.tsv \
+		all.uniqgene.uniqtag5.tsv \
+		all.uniqgene.uniqtag6.tsv \
+		all.uniqgene.uniqtag7.tsv \
+		all.uniqgene.uniqtag8.tsv \
+		all.uniqgene.uniqtag9.tsv \
+		all.uniqgene.uniqtag10.tsv \
+		all.uniqgene.uniqtag20.tsv \
+		all.uniqgene.uniqtag50.tsv \
+		all.uniqgene.uniqtag100.tsv \
+		all.uniqgene.uniqtag200.tsv
+	(head -n1 $< && tail -qn+2 $^) >$@
+
+# Generate the Markdown from the RMarkdown
+README.md: uniqtag.Rmd uniqtag.tsv
+	Rscript -e 'knitr::knit("$<", "$@")'
+	mogrify -units PixelsPerInch -density 300 figure/*.png
+
+# Generate the HTML from the Markdown
+index.html: uniqtag.Rmd uniqtag.tsv
+	Rscript -e 'rmarkdown::render("$<", "html_document", "$@")'
+
+# Generate the PDF from the Markdown
+UniqTag-supp.pdf: uniqtag.Rmd uniqtag.tsv
+	Rscript -e 'rmarkdown::render("$<", "pdf_document", "$@")'
+```
 
 # Table S1. The number of common identifiers
 The number of common identifiers between older builds of the Ensembl human genome and the current build 75 for gene ID (ENSG), protein ID (ENSP), exact peptide sequence and UniqTag for different values of k. These data are used to plot the above figures. It is also available in tab-separated values (TSV) format.
